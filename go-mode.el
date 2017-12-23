@@ -322,7 +322,7 @@ You can install gogetdoc with 'go get -u github.com/zmb3/gogetdoc'."
              (sig (nth 0 iod))
              (pos (nth 1 iod)))
         (if (not (string= "iod-return" sig))
-            (message "%s" iod)
+            (message "%s" (mapconcat #'identity iod "\n"))
           (push-mark)
           (if (eval-when-compile (fboundp 'xref-push-marker-stack))
               ;; TODO: Integrate this facility with XRef.
@@ -1211,7 +1211,12 @@ you save any file, kind of defeating the point of autoloading."
   (if godoc-use-completing-read
       (completing-read "godoc; "
                        (go-packages) nil nil nil 'go-godoc-history)
-    (read-from-minibuffer "godoc: " nil nil nil 'go-godoc-history)))
+    (let* ((sym (thing-at-point 'symbol))
+           (ddoc (if sym (substring-no-properties sym) nil)))
+      (if ddoc
+          (format "%s" (read-from-minibuffer (format "godoc (default %s): " ddoc) nil nil ""
+                                             'go-godoc-history ddoc))
+        (read-from-minibuffer "godoc: " nil nil nil 'go-godoc-history)))))
 
 (defun godoc--get-buffer (query)
   "Get an empty buffer for a godoc QUERY."

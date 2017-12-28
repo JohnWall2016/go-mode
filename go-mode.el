@@ -272,12 +272,14 @@ Consider using ‘godoc-gogetdoc’ instead for more accurate results."
 (defun godoc-gogetdoc (point)
   "Use the gogetdoc tool to find the documentation for an identifier at POINT.
 
-You can install gogetdoc with 'go get -u github.com/zmb3/gogetdoc'."
+You can install gogetdoc with 'go get -u github.com/JohnWall2016/gogetdoc'."
   (if (not (buffer-file-name (go--coverage-origin-buffer)))
       ;; TODO: gogetdoc supports unsaved files, but not introducing
       ;; new artifical files, so this limitation will stay for now.
       (error "Cannot use gogetdoc on a buffer without a file name"))
-  (let ((posn (format "%s:#%d" (shell-quote-argument (file-truename buffer-file-name)) (1- (position-bytes point))))
+  (let ((posn (if (eq system-type 'windows-nt)
+                  (format "%s:#%d" (file-truename buffer-file-name) (1- (position-bytes point)))
+                (format "%s:#%d" (shell-quote-argument (file-truename buffer-file-name)) (1- (position-bytes point)))))
         (out (godoc--get-buffer "<at point>")))
   (with-current-buffer (get-buffer-create "*go-gogetdoc-input*")
     (setq buffer-read-only nil)
@@ -294,12 +296,14 @@ You can install gogetdoc with 'go get -u github.com/zmb3/gogetdoc'."
 (defun gogetdoc-iod (point)
   "Use the gogetdoc tool to find the documentation for an identifier at POINT.
 
-You can install gogetdoc with 'go get -u github.com/zmb3/gogetdoc'."
+You can install gogetdoc with 'go get -u github.com/JohnWall2016/gogetdoc'."
   (if (not (buffer-file-name (go--coverage-origin-buffer)))
       ;; TODO: gogetdoc supports unsaved files, but not introducing
       ;; new artifical files, so this limitation will stay for now.
       (error "Cannot use gogetdoc on a buffer without a file name"))
-  (let ((posn (format "%s:#%d" (shell-quote-argument (file-truename buffer-file-name)) (1- (position-bytes point))))
+  (let ((posn (if (eq system-type 'windows-nt)
+                  (format "%s:#%d" (file-truename buffer-file-name) (1- (position-bytes point)))
+                (format "%s:#%d" (shell-quote-argument (file-truename buffer-file-name)) (1- (position-bytes point)))))
         (out (godoc--get-buffer "<at point>")))
   (with-current-buffer (get-buffer-create "*go-gogetdoc-input*")
     (setq buffer-read-only nil)

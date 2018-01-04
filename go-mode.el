@@ -2067,7 +2067,7 @@ current buffer in the format specified by guru's -modified flag."
   (insert-buffer-substring buffer))
 
 (defun go--buffer-size-bytes (&optional buffer)
-  ;(message "buffer; %s" buffer)
+  ;;(message "buffer; %s" buffer)
   "Return the number of bytes in the current buffer.
 If BUFFER, return the number of characters in that buffer instead."
   (with-current-buffer (or buffer (current-buffer))

@@ -277,14 +277,16 @@ You can install gogetdoc with 'go get -u github.com/JohnWall2016/gogetdoc'."
       ;; TODO: gogetdoc supports unsaved files, but not introducing
       ;; new artifical files, so this limitation will stay for now.
       (error "Cannot use gogetdoc on a buffer without a file name"))
-  (let ((posn (if (eq system-type 'windows-nt)
+  (let ((buff (go--coverage-origin-buffer))
+        (posn (if (eq system-type 'windows-nt)
                   (format "%s:#%d" (file-truename buffer-file-name) (1- (position-bytes point)))
                 (format "%s:#%d" (shell-quote-argument (file-truename buffer-file-name)) (1- (position-bytes point)))))
         (out (godoc--get-buffer "<at point>")))
   (with-current-buffer (get-buffer-create "*go-gogetdoc-input*")
+    (setq-local inhibit-eol-conversion t)
     (setq buffer-read-only nil)
     (erase-buffer)
-    (go--insert-modified-files)
+    (go--insert-modified-files buff)
     (call-process-region (point-min) (point-max) "gogetdoc" nil out nil
                          "-modified"
                          (format "-pos=%s" posn)))
@@ -301,14 +303,16 @@ You can install gogetdoc with 'go get -u github.com/JohnWall2016/gogetdoc'."
       ;; TODO: gogetdoc supports unsaved files, but not introducing
       ;; new artifical files, so this limitation will stay for now.
       (error "Cannot use gogetdoc on a buffer without a file name"))
-  (let ((posn (if (eq system-type 'windows-nt)
+  (let ((buff (go--coverage-origin-buffer))
+        (posn (if (eq system-type 'windows-nt)
                   (format "%s:#%d" (file-truename buffer-file-name) (1- (position-bytes point)))
                 (format "%s:#%d" (shell-quote-argument (file-truename buffer-file-name)) (1- (position-bytes point)))))
         (out (godoc--get-buffer "<at point>")))
   (with-current-buffer (get-buffer-create "*go-gogetdoc-input*")
+    (setq-local inhibit-eol-conversion t)
     (setq buffer-read-only nil)
     (erase-buffer)
-    (go--insert-modified-files)
+    (go--insert-modified-files buff)
     (call-process-region (point-min) (point-max) "gogetdoc" nil out nil
                          "-modified"
                          "-iod"
@@ -2047,11 +2051,12 @@ switching projects."
   "Return the original value of GOPATH from when Emacs was started."
   (let ((process-environment initial-environment)) (getenv "GOPATH")))
 
-(defun go--insert-modified-files ()
+(defun go--insert-modified-files (buff)
   "Insert the contents of each modified Go buffer into the
 current buffer in the format specified by guru's -modified flag."
+  ;(message "%s" buff)
   (mapc #'(lambda (b)
-            (and (buffer-modified-p b)
+            (and (or (buffer-modified-p b) (equal buff b))
                  (buffer-file-name b)
                  (string= (file-name-extension (buffer-file-name b)) "go")
                  (go--insert-modified-file (buffer-file-name b) b)))
@@ -2062,7 +2067,7 @@ current buffer in the format specified by guru's -modified flag."
   (insert-buffer-substring buffer))
 
 (defun go--buffer-size-bytes (&optional buffer)
-  (message "buffer; %s" buffer)
+  ;(message "buffer; %s" buffer)
   "Return the number of bytes in the current buffer.
 If BUFFER, return the number of characters in that buffer instead."
   (with-current-buffer (or buffer (current-buffer))
